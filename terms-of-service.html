@@ -13,25 +13,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script src="shared.js" defer></script>
 </head>
 <body>
 
-  <!-- Navigation -->
-  <nav class="nav-header">
-    <div class="nav-container">
-      <a href="index.html" class="nav-brand">Roost Inspect</a>
-      <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.querySelector('.nav-links').classList.toggle('open')">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="privacy-policy.html">Privacy</a>
-        <a href="terms-of-service.html" class="active">Terms</a>
-        <a href="support.html">Support</a>
-        <a href="account-deletion.html">Delete Account</a>
-      </div>
-    </div>
-  </nav>
+  <!-- Navigation (rendered by shared.js) -->
+  <nav data-site-nav></nav>
 
   <div class="page-wrapper">
     <!-- Page Header -->
@@ -206,20 +193,14 @@
       <div class="card">
         <h2><span class="section-num">15.</span> Contact Us</h2>
         <p>If you have any questions or concerns about these Terms, please contact us:</p>
-        <div class="contact-box">
-          <h3>Roost Inspect</h3>
-          <p>Sydney, NSW, Australia</p>
-          <a href="mailto:contact@my-roost.com" class="email-link">contact@my-roost.com</a>
-        </div>
+        <div data-contact-box></div>
       </div>
 
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="site-footer">
-    <p>&copy; 2025 Roost Inspect. Sydney, NSW, Australia. All rights reserved.</p>
-  </footer>
+  <!-- Footer (rendered by shared.js) -->
+  <footer data-site-footer></footer>
 
 </body>
 </html>
