@@ -1,0 +1,14 @@
+#!/bin/sh
+# Roost develop-first pre-push v1
+set -eu
+
+roost_hook_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+roost_push_input=$(cat)
+printf '%s\n' "$roost_push_input" | sh "$roost_hook_dir/develop-first.sh" "$@" || exit $?
+
+roost_existing_pre_push() {
+  set +eu
+  :
+}
+
+printf '%s\n' "$roost_push_input" | roost_existing_pre_push "$@"
