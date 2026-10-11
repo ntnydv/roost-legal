@@ -60,7 +60,19 @@ function rejected(result) {
   );
 }
 
-function fixture(t, { develop = true, main = true, install = true } = {}) {
+const localGitEnvironmentNames = succeeded(
+  run("git", ["rev-parse", "--local-env-vars"], { cwd: source }),
+).split(/\r?\n/);
+
+function fixture(
+  t,
+  {
+    develop = true,
+    main = true,
+    install = true,
+    environment = process.env,
+  } = {},
+) {
   const root = mkdtempSync(join(tmpdir(), "roost-git-hooks-"));
   t.after(() => {
     assert.equal(dirname(resolve(root)), resolve(tmpdir()));
@@ -70,11 +82,12 @@ function fixture(t, { develop = true, main = true, install = true } = {}) {
   const work = join(root, "work");
   const remote = join(root, "remote.git");
   const env = {
-    ...process.env,
+    ...environment,
     GIT_CONFIG_NOSYSTEM: "1",
     GIT_CONFIG_GLOBAL: join(root, "no-global-config"),
     GIT_TERMINAL_PROMPT: "0",
   };
+  for (const name of localGitEnvironmentNames) delete env[name];
   const git = (...args) => run("git", args, { cwd: work, env });
   const bare = (...args) =>
     run("git", ["--git-dir", remote, ...args], { cwd: root, env });
@@ -125,6 +138,33 @@ function fixture(t, { develop = true, main = true, install = true } = {}) {
     remoteSha,
   };
 }
+
+test("fixtures leave an inherited hook repository and index untouched", (t) => {
+  const foreign = fixture(t, { install: false });
+  const gitDirectory = join(foreign.work, ".git");
+  const configPath = join(gitDirectory, "config");
+  const indexPath = join(gitDirectory, "index");
+  const originalConfig = readFileSync(configPath);
+  const originalIndex = readFileSync(indexPath);
+  const f = fixture(t, {
+    environment: {
+      ...process.env,
+      GIT_DIR: gitDirectory,
+      GIT_COMMON_DIR: gitDirectory,
+      GIT_WORK_TREE: foreign.work,
+      GIT_INDEX_FILE: indexPath,
+      GIT_OBJECT_DIRECTORY: join(gitDirectory, "objects"),
+      GIT_PREFIX: "test/",
+    },
+  });
+  const next = f.commit();
+  succeeded(f.git("push", "origin", "develop"));
+  succeeded(f.git("push", "origin", "develop:main"));
+  assert.equal(f.remoteSha("main"), next);
+  assert.equal(succeeded(foreign.git("rev-parse", "HEAD")), foreign.base);
+  assert.deepEqual(readFileSync(configPath), originalConfig);
+  assert.deepEqual(readFileSync(indexPath), originalIndex);
+});
 
 test("feature pushes and develop creation and advancement remain allowed", (t) => {
   const f = fixture(t, { develop: false, main: false });
